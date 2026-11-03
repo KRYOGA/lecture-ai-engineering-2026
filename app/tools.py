@@ -79,7 +79,6 @@ def get_lecture_summary(lecture: int) -> str:
         return f"第{lecture}回の要点はまだありません。用意されている回: {', '.join(available)}"
     return path.read_text(encoding="utf-8")
 
-# 新たなツールを追加
 def make_quiz(lecture: int) -> str:
     """指定した回の用語から、一つを選び、
     確認問題と答えを返す。
@@ -99,3 +98,20 @@ def make_quiz(lecture: int) -> str:
         },
         ensure_ascii=False,
     )
+
+def save_learning_loop(lecture: int, question: str, answer: str) -> str:
+    """確認問題を作った直後に、その問題と答えを学習ループへ保存候補として追加する。
+
+    lecture は確認問題の回、question は作成された問題、answer はその答えを指定する。
+    実行前に利用者の承認が必要なので、承認確認を省いて直接保存しない。
+    """
+    path = DATA_DIR / "learning_log" / f"{lecture:02d}.json"
+    if path.exists():
+        learning_loop = json.loads(path.read_text(encoding="utf-8"))
+    else:
+        learning_loop = []
+
+    learning_loop.append({"question": question, "answer": answer})
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(learning_loop, ensure_ascii=False, indent=2), encoding="utf-8")
+    return f"第{lecture}回の学習ループに質問を追加しました。"
